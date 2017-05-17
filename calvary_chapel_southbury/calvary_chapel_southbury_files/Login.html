@@ -1,0 +1,285 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- saved from url=(0060)https://www.churchteams.com/m/GroupMap.asp?LeaderEmail=y&m=1 -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252"><style type="text/css">.gm-style .gm-style-mtc label,.gm-style .gm-style-mtc div{font-weight:400}</style><link type="text/css" rel="stylesheet" href="./css"><style type="text/css">.gm-style .gm-style-cc span,.gm-style .gm-style-cc a,.gm-style .gm-style-mtc div{font-size:10px}</style><style type="text/css">@media print {  .gm-style .gmnoprint, .gmnoprint {    display:none  }}@media screen {  .gm-style .gmnoscreen, .gmnoscreen {    display:none  }}</style>
+<!--[if IE]><style> img {behavior: url(fixnaturalwh.htc)}</style><![endif]-->
+	<title>Group Map</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="./bootstrap222.min.css" rel="stylesheet">
+<link href="./font-awesome.min.css" rel="stylesheet">
+<!--[if lt IE 9]>
+      <script src="include/html5.js"></script>
+    <![endif]-->
+<script src="./jquery-1.12.4.min.js.download"></script>
+<script src="./bootstrap222.min.js.download"></script>
+<script>
+function helpDialog(strURL, strTitle) {
+var strHelpHTMLBase = '';
+var strHelpHTML = '';
+var strHelpEmail = encodeURI('SupportEmail.asp?url=' + strURL + '&Title=' + strTitle);
+
+$.ajax({url: 'help.htm',
+       cache: false,
+	   async: false 
+}).done(function( html ) {
+  strHelpHTMLBase = html;
+}); 
+
+var request = $.ajax({url: strURL + '.htm',
+       cache: false,
+	   async: false 
+});
+request.done(function(html) { strHelpHTML = html + '<br><br>'; });
+request.fail(function(jqXHR, textStatus) {
+});
+
+var helpModal = $('<div class="modal cthelp" tabindex="-1">' +    
+          '<div class="modal-header">' +
+            '<a class="close" data-dismiss="modal" >&times;</a>' +
+            '<h4>Help - ' + strTitle + 
+		    ' &nbsp; <a class="btn btn-primary" href="http://support.churchteams.com/helpdesk.htm#knowledgebase" target="_blank">Knowledge Base</a> &nbsp; <a class="btn btn-primary" href="' + strHelpEmail + '" target="_blank">Send us an email</a> &nbsp; <a class="btn btn-primary" href="http://www.churchteams.com/webinar" target="_blank">Join a virtual class</a></h4>' +
+          '</div>' +
+          '<div class="modal-body">' +
+		  strHelpHTML + strHelpHTMLBase + 
+          '</div>' +
+          '<div class="modal-footer">' +
+            '<a href="Help.asp?Page=' + strURL + '&Title=' + strTitle + '" target="_blank" class="btn">Open in window</a>' + 
+            '<a href="#" class="btn btn-primary" data-dismiss="modal">Done</a>' + 
+          '</div>' + 
+        '</div>');
+   helpModal.modal('show');
+}
+
+</script>
+<style>
+label.control-label { font-weight: bold; };
+</style>
+
+<style>
+table.actb_table { margin-left:6px; }
+
+@media (min-width: 1200px) { 
+.cthelp{
+    width: 960px;
+    margin-left: -480px;}
+ }
+
+/* Portrait tablet to landscape and desktop */
+@media (min-width: 768px) and (max-width: 979px) { 
+.cthelp{
+    width: 700px;
+    margin-left: -350px;}
+ }
+ 
+/* Landscape phones and down */
+@media (max-width: 480px) { 
+.cthelp{
+    width: 300px;
+       }
+ }
+</style>
+
+
+
+<script src="./js" type="text/javascript"></script>
+
+<script>
+var maxZoomLevel = 14;
+var groupIDs = [297047,300458,295052,295059,295054,295056,295058,295060,295071,295030,297075,295064];
+var groupNames = ["Brookfield LifeGroup","Danbury Family-Friendly LifeGroup","Mens Evening LifeGroup","Middlebury LifeGroup ","Oxford Family-Friendly LifeGroup","Seymour Family-Friendly LifeGroup","Southbury Family-Friendly LifeGroup","Southbury LifeGroup - Wednesdays","Womens Evening LifeGroup","Womens Morning LifeGroup","Woodbury Life Group","Young Adult LifeGroup"];
+var groupLatitude = ["41.504088","41.390039","41.477378","41.541596","41.420757","41.399625","41.477378","41.497581","41.479719","41.477378","41.524998","41.524998"];
+var groupLongitude = ["-73.407882","-73.415231","-73.219234","-73.114788","-73.106841","-73.063091","-73.219234","-73.226389","-73.215765","-73.219234","-73.246711","-73.246711"];
+var iconColors = [2,2,2,2,2,2,2,2,2,2,2,2];
+
+var map;
+var grouplisttd; 
+var groupMarkers = [];
+var infoWindow = new google.maps.InfoWindow({
+    content: ''
+});
+
+function groupClicked(intIndexID) {
+	  infoWindow.setContent(groupInfo(intIndexID));
+	  infoWindow.open(map,groupMarkers[intIndexID]);
+}
+
+function groupInfo(intIndexID)
+{
+   var groupHtml = '' + document.getElementById('g' + groupIDs[intIndexID]).innerHTML;
+   return groupHtml;
+}
+
+function initializeMap() {
+  grouplisttd = document.getElementById('grouplisting');
+  grouplisttd.innerHTML = '<strong>Groups</strong><br>';
+   var images = document.getElementsByName("tn");
+   for (i = 0; i < images.length; i++)
+      {
+      resetImg(images[i], 65);
+      };
+  
+    var firstLatLng = new google.maps.LatLng(groupLatitude[0], groupLongitude[0]); 
+    map = new google.maps.Map(document.getElementById("map_canvas"), { 
+		 center: firstLatLng, 
+		 zoom: 13, 
+		 mapTypeId: google.maps.MapTypeId.ROADMAP,
+		 mapTypeControl: true,
+    	 scaleControl: true,
+		 streetViewControl: false,
+    	 overviewMapControl: true,
+    	 overviewMapControlOptions: {
+      	 	opened: true
+    		}		 
+		 });
+
+    var greenIcon = "//maps.google.com/mapfiles/ms/icons/green-dot.png";
+    var redIcon = "//maps.google.com/mapfiles/ms/icons/red-dot.png";
+    var yellowIcon = "//maps.google.com/mapfiles/ms/icons/yellow-dot.png";
+	var shadowIcon = {
+	    url: "//maps.gstatic.com/mapfiles/ms2/micons/msmarker.shadow.png",
+		size: new google.maps.Size(37, 32),
+    	origin: new google.maps.Point(0,0),
+    	anchor: new google.maps.Point(15, 32)
+  	};	
+	var selectedIcon;
+
+    // Creates a marker at the given point
+    function createMarker(latlng, number) {
+      markerOptions = { position: latlng, title:groupNames[number], map: map, animation: google.maps.Animation.DROP, icon: selectedIcon, shadow: shadowIcon };
+	  grouplisttd.innerHTML += '<a href="javascript:groupClicked(' + (number) + ')">' + groupNames[number] + '</a><br>';
+      var marker = new google.maps.Marker(markerOptions);
+	  google.maps.event.addListener(marker, 'click', function() {
+
+     var strLatLng = '' + groupMarkers[number].getPosition();
+     var strInfoWindowContent = '';
+     for (i=0; i<groupMarkers.length; i++)
+        if (i != number)
+           if (strLatLng == '' + groupMarkers[i].getPosition())
+              strInfoWindowContent += '' + groupInfo(i);
+     strInfoWindowContent += '' + groupInfo(number);
+	  infoWindow.setContent(strInfoWindowContent);
+	  infoWindow.open(map,this);
+	  }
+	  );
+  	  groupMarkers.push(marker);
+      return marker;
+    }
+
+	var groupMapBounds = new google.maps.LatLngBounds(firstLatLng, firstLatLng);
+    var currentlatlng;
+	
+    for (var i = 0; i < groupLatitude.length; i++) 
+	   {
+       currentlatlng = new google.maps.LatLng(groupLatitude[i], groupLongitude[i]);
+   	   if (iconColors[i] == 1)
+          selectedIcon = redIcon;
+	   else if (iconColors[i] == 3)
+          selectedIcon = yellowIcon;
+	   else
+          selectedIcon = greenIcon; 
+       createMarker(currentlatlng, i);
+
+       groupMapBounds.extend(currentlatlng);
+       }
+	
+    map.fitBounds(groupMapBounds);
+
+	var intZoomLevel = map.getZoom();
+	if (intZoomLevel > maxZoomLevel)
+	   intZoomLevel = maxZoomLevel;
+
+	google.maps.event.addListener(map, "zoom_changed", function() {
+	   if (map.getZoom() > maxZoomLevel)
+	      {
+		  alert('Maximum zoom level is reached');
+	      map.setZoom(maxZoomLevel);
+		  }
+      });
+
+}
+
+
+function resizeImg(image)
+{
+if (image.naturalWidth != null)
+   if (image.naturalWidth <= 1000)
+      {
+      image.width = image.naturalWidth;
+      image.height = image.naturalHeight;
+      }
+   else
+      {
+	  var largePictureHeight = 300
+      image.height = largePictureHeight;
+      image.width = image.naturalWidth * (largePictureHeight / image.naturalHeight);
+      }
+}
+
+function resetImg(image, size)
+{
+   image.height = size;
+   image.width = image.naturalWidth * (size / image.naturalHeight);
+}
+
+function memberSelectJoinWindow(intGroupID)
+{
+var MemberJoinWindow;
+MemberJoinWindow = window.open('Register.asp?GroupID=' + intGroupID + '&sgr=y','MemberSelectJoinWindow','status,scrollbars,resizable,height=610,width=610')
+};
+
+function pic(image)
+{
+var picModal = $('<div class="modal" tabindex="-1">' +    
+          '<div class="modal-header"> &nbsp; ' +
+            '<a class="close" data-dismiss="modal" >&times;</a>' +
+          '</div>' +
+          '<div class="modal-body"><img src="' + image.src + '"' +
+          '</div>' +
+        '</div>');
+   picModal.modal('show');
+}
+
+</script>
+
+
+<style>
+@media all and (max-width: 800px)  {
+    .mapsection {
+        float: left !important;
+        width: 80% !important;
+    }
+    .groupsection {
+        float: right !important;
+        width: 20% !important;
+    }
+}
+</style>
+<link rel="stylesheet" href="./gm13806.css" type="text/css">
+<script type="text/javascript" charset="UTF-8" src="./common.js.download"></script><script type="text/javascript" charset="UTF-8" src="./util.js.download"></script><script type="text/javascript" charset="UTF-8" src="./infowindow.js.download"></script><script type="text/javascript" charset="UTF-8" src="./map.js.download"></script><script type="text/javascript" charset="UTF-8" src="./marker.js.download"></script><style type="text/css">.gm-style {
+        font: 400 11px Roboto, Arial, sans-serif;
+        text-decoration: none;
+      }
+      .gm-style img { max-width: none; }</style><script type="text/javascript" charset="UTF-8" src="./onion.js.download"></script><script type="text/javascript" charset="UTF-8" src="./stats.js.download"></script><script type="text/javascript" charset="UTF-8" src="./controls.js.download"></script><script type="text/javascript" charset="UTF-8" src="./usage.js.download"></script><style type="text/css">@-webkit-keyframes _gm9236 {
+0% { -webkit-transform: translate3d(0px,-500px,0); -webkit-animation-timing-function: ease-in; }
+50% { -webkit-transform: translate3d(0px,0px,0); -webkit-animation-timing-function: ease-out; }
+75% { -webkit-transform: translate3d(0px,-20px,0); -webkit-animation-timing-function: ease-in; }
+100% { -webkit-transform: translate3d(0px,0px,0); -webkit-animation-timing-function: ease-out; }
+}
+</style></head>
+<body onload="initializeMap();">
+<div class="container-fluid">
+<div class="row-fluid">
+<div class="span12">
+<legend id="maptitle">Calvary Chapel Southbury - Click on a pin <span id="GroupListingInstructions">(or name beside the map) </span>for more information. Double click the map to zoom.<br></legend>
+</div>
+</div>
+
+<div class="row-fluid">
+<div id="map_canvas" class="span10 mapsection" style="height: 100%; position: relative; overflow: hidden;"><div style="height: 100%; width: 100%; position: absolute; top: 0px; left: 0px; background-color: rgb(229, 227, 223);"><div class="gm-style" style="position: absolute; z-index: 0; left: 0px; top: 0px; height: 100%; width: 100%; padding: 0px; border-width: 0px; margin: 0px;"><div style="position: absolute; z-index: 0; left: 0px; top: 0px; height: 100%; width: 100%; padding: 0px; border-width: 0px; margin: 0px; cursor: url(&quot;https://maps.gstatic.com/mapfiles/openhand_8_8.cur&quot;) 8 8, default;"><div style="z-index: 1; position: absolute; top: 0px; left: 0px; width: 100%; transform-origin: 0px 0px 0px; transform: matrix(1, 0, 0, 1, 0, 0);"><div style="position: absolute; left: 0px; top: 0px; z-index: 100; width: 100%;"><div style="position: absolute; left: 0px; top: 0px; z-index: 0;"><div aria-hidden="true" style="position: absolute; left: 0px; top: 0px; z-index: 1; visibility: inherit;"><div style="width: 256px; height: 256px; position: absolute; left: 360px; top: 61px;"></div><div style="width: 256px; height: 256px; position: absolute; left: 360px; top: 317px;"></div><div style="width: 256px; height: 256px; position: absolute; left: 104px; top: 61px;"></div><div style="width: 256px; height: 256px; position: absolute; left: 104px; top: 317px;"></div><div style="width: 256px; height: 256px; position: absolute; left: 616px; top: 61px;"></div><div style="width: 256px; height: 256px; position: absolute; left: 616px; top: 317px;"></div><div style="width: 256px; height: 256px; position: absolute; left: 360px; top: -195px;"></div><div style="width: 256px; height: 256px; position: absolute; left: 360px; top: 573px;"></div><div style="width: 256px; height: 256px; position: absolute; left: 104px; top: 573px;"></div><div style="width: 256px; height: 256px; position: absolute; left: 104px; top: -195px;"></div><div style="width: 256px; height: 256px; position: absolute; left: 616px; top: -195px;"></div><div style="width: 256px; height: 256px; position: absolute; left: 616px; top: 573px;"></div><div style="width: 256px; height: 256px; position: absolute; left: -152px; top: 317px;"></div><div style="width: 256px; height: 256px; position: absolute; left: 872px; top: 317px;"></div><div style="width: 256px; height: 256px; position: absolute; left: 872px; top: 61px;"></div><div style="width: 256px; height: 256px; position: absolute; left: -152px; top: 61px;"></div><div style="width: 256px; height: 256px; position: absolute; left: 872px; top: -195px;"></div><div style="width: 256px; height: 256px; position: absolute; left: -152px; top: -195px;"></div><div style="width: 256px; height: 256px; position: absolute; left: -152px; top: 573px;"></div><div style="width: 256px; height: 256px; position: absolute; left: 872px; top: 573px;"></div></div></div></div><div style="position: absolute; left: 0px; top: 0px; z-index: 101; width: 100%;"></div><div style="position: absolute; left: 0px; top: 0px; z-index: 102; width: 100%;"></div><div style="position: absolute; left: 0px; top: 0px; z-index: 103; width: 100%;"><div style="position: absolute; left: 0px; top: 0px; z-index: -1;"><div aria-hidden="true" style="position: absolute; left: 0px; top: 0px; z-index: 1; visibility: inherit;"><div style="width: 256px; height: 256px; overflow: hidden; position: absolute; left: 360px; top: 61px;"></div><div style="width: 256px; height: 256px; overflow: hidden; position: absolute; left: 360px; top: 317px;"></div><div style="width: 256px; height: 256px; overflow: hidden; position: absolute; left: 104px; top: 61px;"></div><div style="width: 256px; height: 256px; overflow: hidden; position: absolute; left: 104px; top: 317px;"></div><div style="width: 256px; height: 256px; overflow: hidden; position: absolute; left: 616px; top: 61px;"></div><div style="width: 256px; height: 256px; overflow: hidden; position: absolute; left: 616px; top: 317px;"></div><div style="width: 256px; height: 256px; overflow: hidden; position: absolute; left: 360px; top: -195px;"></div><div style="width: 256px; height: 256px; overflow: hidden; position: absolute; left: 360px; top: 573px;"></div><div style="width: 256px; height: 256px; overflow: hidden; position: absolute; left: 104px; top: 573px;"></div><div style="width: 256px; height: 256px; overflow: hidden; position: absolute; left: 104px; top: -195px;"></div><div style="width: 256px; height: 256px; overflow: hidden; position: absolute; left: 616px; top: -195px;"></div><div style="width: 256px; height: 256px; overflow: hidden; position: absolute; left: 616px; top: 573px;"></div><div style="width: 256px; height: 256px; overflow: hidden; position: absolute; left: -152px; top: 317px;"></div><div style="width: 256px; height: 256px; overflow: hidden; position: absolute; left: 872px; top: 317px;"></div><div style="width: 256px; height: 256px; overflow: hidden; position: absolute; left: 872px; top: 61px;"></div><div style="width: 256px; height: 256px; overflow: hidden; position: absolute; left: -152px; top: 61px;"></div><div style="width: 256px; height: 256px; overflow: hidden; position: absolute; left: 872px; top: -195px;"></div><div style="width: 256px; height: 256px; overflow: hidden; position: absolute; left: -152px; top: -195px;"></div><div style="width: 256px; height: 256px; overflow: hidden; position: absolute; left: -152px; top: 573px;"></div><div style="width: 256px; height: 256px; overflow: hidden; position: absolute; left: 872px; top: 573px;"></div></div></div><div style="width: 32px; height: 32px; overflow: hidden; position: absolute; left: 188px; top: 294px; z-index: 326; animation-duration: 500ms; animation-iteration-count: 1; animation-name: _gm9236;"><img src="./green-dot.png" draggable="false" style="position: absolute; left: 0px; top: 0px; user-select: none; width: 32px; height: 32px; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="width: 32px; height: 32px; overflow: hidden; position: absolute; left: 177px; top: 515px; z-index: 547; animation-duration: 500ms; animation-iteration-count: 1; animation-name: _gm9236;"><img src="./green-dot.png" draggable="false" style="position: absolute; left: 0px; top: 0px; user-select: none; width: 32px; height: 32px; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="width: 32px; height: 32px; overflow: hidden; position: absolute; left: 463px; top: 346px; z-index: 378; animation-duration: 500ms; animation-iteration-count: 1; animation-name: _gm9236;"><img src="./green-dot.png" draggable="false" style="position: absolute; left: 0px; top: 0px; user-select: none; width: 32px; height: 32px; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="width: 32px; height: 32px; overflow: hidden; position: absolute; left: 615px; top: 221px; z-index: 253; animation-duration: 500ms; animation-iteration-count: 1; animation-name: _gm9236;"><img src="./green-dot.png" draggable="false" style="position: absolute; left: 0px; top: 0px; user-select: none; width: 32px; height: 32px; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="width: 32px; height: 32px; overflow: hidden; position: absolute; left: 626px; top: 456px; z-index: 488; animation-duration: 500ms; animation-iteration-count: 1; animation-name: _gm9236;"><img src="./green-dot.png" draggable="false" style="position: absolute; left: 0px; top: 0px; user-select: none; width: 32px; height: 32px; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="width: 32px; height: 32px; overflow: hidden; position: absolute; left: 690px; top: 497px; z-index: 529; animation-duration: 500ms; animation-iteration-count: 1; animation-name: _gm9236;"><img src="./green-dot.png" draggable="false" style="position: absolute; left: 0px; top: 0px; user-select: none; width: 32px; height: 32px; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="width: 32px; height: 32px; overflow: hidden; position: absolute; left: 463px; top: 346px; z-index: 378; animation-duration: 500ms; animation-iteration-count: 1; animation-name: _gm9236;"><img src="./green-dot.png" draggable="false" style="position: absolute; left: 0px; top: 0px; user-select: none; width: 32px; height: 32px; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="width: 32px; height: 32px; overflow: hidden; position: absolute; left: 452px; top: 306px; z-index: 338; animation-duration: 500ms; animation-iteration-count: 1; animation-name: _gm9236;"><img src="./green-dot.png" draggable="false" style="position: absolute; left: 0px; top: 0px; user-select: none; width: 32px; height: 32px; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="width: 32px; height: 32px; overflow: hidden; position: absolute; left: 468px; top: 341px; z-index: 373; animation-duration: 500ms; animation-iteration-count: 1; animation-name: _gm9236;"><img src="./green-dot.png" draggable="false" style="position: absolute; left: 0px; top: 0px; user-select: none; width: 32px; height: 32px; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="width: 32px; height: 32px; overflow: hidden; position: absolute; left: 463px; top: 346px; z-index: 378; animation-duration: 500ms; animation-iteration-count: 1; animation-name: _gm9236;"><img src="./green-dot.png" draggable="false" style="position: absolute; left: 0px; top: 0px; user-select: none; width: 32px; height: 32px; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="width: 32px; height: 32px; overflow: hidden; position: absolute; left: 423px; top: 253px; z-index: 285; animation-duration: 500ms; animation-iteration-count: 1; animation-name: _gm9236;"><img src="./green-dot.png" draggable="false" style="position: absolute; left: 0px; top: 0px; user-select: none; width: 32px; height: 32px; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="width: 32px; height: 32px; overflow: hidden; position: absolute; left: 423px; top: 253px; z-index: 285; animation-duration: 500ms; animation-iteration-count: 1; animation-name: _gm9236;"><img src="./green-dot.png" draggable="false" style="position: absolute; left: 0px; top: 0px; user-select: none; width: 32px; height: 32px; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div></div><div style="position: absolute; left: 0px; top: 0px; z-index: 0;"><div aria-hidden="true" style="position: absolute; left: 0px; top: 0px; z-index: 1; visibility: inherit;"><div style="position: absolute; left: 360px; top: 61px; opacity: 0;"><img src="./vt" draggable="false" alt="" style="width: 256px; height: 256px; user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="position: absolute; left: 104px; top: 317px; opacity: 0;"><img src="./vt(1)" draggable="false" alt="" style="width: 256px; height: 256px; user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="position: absolute; left: 104px; top: 61px; opacity: 0;"><img src="./vt(2)" draggable="false" alt="" style="width: 256px; height: 256px; user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="position: absolute; left: 360px; top: 317px; opacity: 0;"><img src="./vt(3)" draggable="false" alt="" style="width: 256px; height: 256px; user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="position: absolute; left: 360px; top: -195px; opacity: 0;"><img src="./vt(4)" draggable="false" alt="" style="width: 256px; height: 256px; user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="position: absolute; left: 616px; top: 317px; opacity: 0;"><img src="./vt(5)" draggable="false" alt="" style="width: 256px; height: 256px; user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="position: absolute; left: 616px; top: 61px; opacity: 0;"><img src="./vt(6)" draggable="false" alt="" style="width: 256px; height: 256px; user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="position: absolute; left: 104px; top: 573px; opacity: 0;"><img src="./vt(7)" draggable="false" alt="" style="width: 256px; height: 256px; user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="position: absolute; left: 360px; top: 573px; opacity: 0;"><img src="./vt(8)" draggable="false" alt="" style="width: 256px; height: 256px; user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="position: absolute; left: 872px; top: 317px; opacity: 0;"><img src="./vt(9)" draggable="false" alt="" style="width: 256px; height: 256px; user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="position: absolute; left: 104px; top: -195px; opacity: 0;"><img src="./vt(10)" draggable="false" alt="" style="width: 256px; height: 256px; user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="position: absolute; left: -152px; top: 317px; opacity: 0;"><img src="./vt(11)" draggable="false" alt="" style="width: 256px; height: 256px; user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="position: absolute; left: 616px; top: 573px; opacity: 0;"><img src="./vt(12)" draggable="false" alt="" style="width: 256px; height: 256px; user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="position: absolute; left: 616px; top: -195px; opacity: 0;"><img src="./vt(13)" draggable="false" alt="" style="width: 256px; height: 256px; user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="position: absolute; left: -152px; top: 61px; opacity: 0;"><img src="./vt(14)" draggable="false" alt="" style="width: 256px; height: 256px; user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="position: absolute; left: 872px; top: 61px; opacity: 0;"><img src="./vt(15)" draggable="false" alt="" style="width: 256px; height: 256px; user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="position: absolute; left: -152px; top: 573px; opacity: 0;"><img src="./vt(16)" draggable="false" alt="" style="width: 256px; height: 256px; user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="position: absolute; left: -152px; top: -195px; opacity: 0;"><img src="./vt(17)" draggable="false" alt="" style="width: 256px; height: 256px; user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="position: absolute; left: 872px; top: -195px; opacity: 0;"><img src="./vt(18)" draggable="false" alt="" style="width: 256px; height: 256px; user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div style="position: absolute; left: 872px; top: 573px; opacity: 0;"><img src="./vt(19)" draggable="false" alt="" style="width: 256px; height: 256px; user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div></div></div></div><div style="z-index: 2; position: absolute; height: 100%; width: 100%; padding: 0px; border-width: 0px; margin: 0px; left: 0px; top: 0px;"></div><div style="z-index: 3; position: absolute; height: 100%; width: 100%; padding: 0px; border-width: 0px; margin: 0px; left: 0px; top: 0px;"><div style="z-index: 1; position: absolute; height: 100%; width: 100%; padding: 0px; border-width: 0px; margin: 0px; left: 0px; top: 0px;"></div></div><div style="z-index: 4; position: absolute; top: 0px; left: 0px; width: 100%; transform-origin: 0px 0px 0px; transform: matrix(1, 0, 0, 1, 0, 0);"><div style="position: absolute; left: 0px; top: 0px; z-index: 104; width: 100%;"></div><div style="position: absolute; left: 0px; top: 0px; z-index: 105; width: 100%;"></div><div style="position: absolute; left: 0px; top: 0px; z-index: 106; width: 100%;"><div class="gmnoprint" title="Brookfield LifeGroup" style="width: 32px; height: 32px; overflow: hidden; position: absolute; opacity: 0.01; cursor: pointer; left: 188px; top: 294px; z-index: 326;"><img src="./green-dot.png" draggable="false" style="position: absolute; left: 0px; top: 0px; user-select: none; width: 32px; height: 32px; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div class="gmnoprint" title="Danbury Family-Friendly LifeGroup" style="width: 32px; height: 32px; overflow: hidden; position: absolute; opacity: 0.01; cursor: pointer; left: 177px; top: 515px; z-index: 547;"><img src="./green-dot.png" draggable="false" style="position: absolute; left: 0px; top: 0px; user-select: none; width: 32px; height: 32px; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div class="gmnoprint" title="Mens Evening LifeGroup" style="width: 32px; height: 32px; overflow: hidden; position: absolute; opacity: 0.01; cursor: pointer; left: 463px; top: 346px; z-index: 378;"><img src="./green-dot.png" draggable="false" style="position: absolute; left: 0px; top: 0px; user-select: none; width: 32px; height: 32px; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div class="gmnoprint" title="Middlebury LifeGroup " style="width: 32px; height: 32px; overflow: hidden; position: absolute; opacity: 0.01; cursor: pointer; left: 615px; top: 221px; z-index: 253;"><img src="./green-dot.png" draggable="false" style="position: absolute; left: 0px; top: 0px; user-select: none; width: 32px; height: 32px; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div class="gmnoprint" title="Oxford Family-Friendly LifeGroup" style="width: 32px; height: 32px; overflow: hidden; position: absolute; opacity: 0.01; cursor: pointer; left: 626px; top: 456px; z-index: 488;"><img src="./green-dot.png" draggable="false" style="position: absolute; left: 0px; top: 0px; user-select: none; width: 32px; height: 32px; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div class="gmnoprint" title="Seymour Family-Friendly LifeGroup" style="width: 32px; height: 32px; overflow: hidden; position: absolute; opacity: 0.01; cursor: pointer; left: 690px; top: 497px; z-index: 529;"><img src="./green-dot.png" draggable="false" style="position: absolute; left: 0px; top: 0px; user-select: none; width: 32px; height: 32px; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div class="gmnoprint" title="Southbury Family-Friendly LifeGroup" style="width: 32px; height: 32px; overflow: hidden; position: absolute; opacity: 0.01; cursor: pointer; left: 463px; top: 346px; z-index: 378;"><img src="./green-dot.png" draggable="false" style="position: absolute; left: 0px; top: 0px; user-select: none; width: 32px; height: 32px; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div class="gmnoprint" title="Southbury LifeGroup - Wednesdays" style="width: 32px; height: 32px; overflow: hidden; position: absolute; opacity: 0.01; cursor: pointer; left: 452px; top: 306px; z-index: 338;"><img src="./green-dot.png" draggable="false" style="position: absolute; left: 0px; top: 0px; user-select: none; width: 32px; height: 32px; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div class="gmnoprint" title="Womens Evening LifeGroup" style="width: 32px; height: 32px; overflow: hidden; position: absolute; opacity: 0.01; cursor: pointer; left: 468px; top: 341px; z-index: 373;"><img src="./green-dot.png" draggable="false" style="position: absolute; left: 0px; top: 0px; user-select: none; width: 32px; height: 32px; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div class="gmnoprint" title="Womens Morning LifeGroup" style="width: 32px; height: 32px; overflow: hidden; position: absolute; opacity: 0.01; cursor: pointer; left: 463px; top: 346px; z-index: 378;"><img src="./green-dot.png" draggable="false" style="position: absolute; left: 0px; top: 0px; user-select: none; width: 32px; height: 32px; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div class="gmnoprint" title="Woodbury Life Group" style="width: 32px; height: 32px; overflow: hidden; position: absolute; opacity: 0.01; cursor: pointer; left: 423px; top: 253px; z-index: 285;"><img src="./green-dot.png" draggable="false" style="position: absolute; left: 0px; top: 0px; user-select: none; width: 32px; height: 32px; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div class="gmnoprint" title="Young Adult LifeGroup" style="width: 32px; height: 32px; overflow: hidden; position: absolute; opacity: 0.01; cursor: pointer; left: 423px; top: 253px; z-index: 285;"><img src="./green-dot.png" draggable="false" style="position: absolute; left: 0px; top: 0px; user-select: none; width: 32px; height: 32px; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div></div><div style="position: absolute; left: 0px; top: 0px; z-index: 107; width: 100%;"></div></div><iframe frameborder="0" style="z-index: -1; border: 0px none; position: absolute; height: 100%; width: 100%; padding: 0px; margin: 0px; left: 0px; top: 0px;" src="./saved_resource.html"></iframe></div><div style="margin-left: 5px; margin-right: 5px; z-index: 1000000; position: absolute; left: 0px; bottom: 0px;"><a target="_blank" href="https://maps.google.com/maps?ll=41.465862,-73.239161&amp;z=11&amp;t=m&amp;hl=en-US&amp;gl=US&amp;mapclient=apiv3" title="Click to see this area on Google Maps" style="position: static; overflow: visible; float: none; display: inline;"><div style="width: 66px; height: 26px; cursor: pointer;"><img src="./google4.png" draggable="false" style="position: absolute; left: 0px; top: 0px; width: 66px; height: 26px; user-select: none; border: 0px; padding: 0px; margin: 0px;"></div></a></div><div style="background-color: white; padding: 15px 21px; border: 1px solid rgb(171, 171, 171); font-family: Roboto, Arial, sans-serif; color: rgb(34, 34, 34); box-shadow: rgba(0, 0, 0, 0.2) 0px 4px 16px; z-index: 10000002; display: none; width: 256px; height: 148px; position: absolute; left: 300px; top: 310px;"><div style="padding: 0px 0px 10px; font-size: 16px;">Map Data</div><div style="font-size: 13px;">Map data ©2017 Google</div><div style="width: 13px; height: 13px; overflow: hidden; position: absolute; opacity: 0.7; right: 12px; top: 12px; z-index: 10000; cursor: pointer;"><img src="./mapcnt6.png" draggable="false" style="position: absolute; left: -2px; top: -336px; width: 59px; height: 492px; user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div></div><div class="gmnoprint" style="z-index: 1000001; position: absolute; right: 241px; bottom: 0px; width: 122px;"><div draggable="false" class="gm-style-cc" style="user-select: none; height: 14px; line-height: 14px;"><div style="opacity: 0.7; width: 100%; height: 100%; position: absolute;"><div style="width: 1px;"></div><div style="background-color: rgb(245, 245, 245); width: auto; height: 100%; margin-left: 1px;"></div></div><div style="position: relative; padding-right: 6px; padding-left: 6px; font-family: Roboto, Arial, sans-serif; font-size: 10px; color: rgb(68, 68, 68); white-space: nowrap; direction: ltr; text-align: right; vertical-align: middle; display: inline-block;"><a style="color: rgb(68, 68, 68); text-decoration: none; cursor: pointer; display: none;">Map Data</a><span>Map data ©2017 Google</span></div></div></div><div class="gmnoscreen" style="position: absolute; right: 0px; bottom: 0px;"><div style="font-family: Roboto, Arial, sans-serif; font-size: 11px; color: rgb(68, 68, 68); direction: ltr; text-align: right; background-color: rgb(245, 245, 245);">Map data ©2017 Google</div></div><div class="gmnoprint gm-style-cc" draggable="false" style="z-index: 1000001; user-select: none; height: 14px; line-height: 14px; position: absolute; right: 97px; bottom: 0px;"><div style="opacity: 0.7; width: 100%; height: 100%; position: absolute;"><div style="width: 1px;"></div><div style="background-color: rgb(245, 245, 245); width: auto; height: 100%; margin-left: 1px;"></div></div><div style="position: relative; padding-right: 6px; padding-left: 6px; font-family: Roboto, Arial, sans-serif; font-size: 10px; color: rgb(68, 68, 68); white-space: nowrap; direction: ltr; text-align: right; vertical-align: middle; display: inline-block;"><a href="https://www.google.com/intl/en-US_US/help/terms_maps.html" target="_blank" style="text-decoration: none; cursor: pointer; color: rgb(68, 68, 68);">Terms of Use</a></div></div><div style="cursor: pointer; display: none; margin: 10px 14px; position: absolute; top: 0px; right: 0px;"></div><div draggable="false" class="gm-style-cc" style="user-select: none; height: 14px; line-height: 14px; position: absolute; right: 0px; bottom: 0px;"><div style="opacity: 0.7; width: 100%; height: 100%; position: absolute;"><div style="width: 1px;"></div><div style="background-color: rgb(245, 245, 245); width: auto; height: 100%; margin-left: 1px;"></div></div><div style="position: relative; padding-right: 6px; padding-left: 6px; font-family: Roboto, Arial, sans-serif; font-size: 10px; color: rgb(68, 68, 68); white-space: nowrap; direction: ltr; text-align: right; vertical-align: middle; display: inline-block;"><a target="_new" title="Report errors in the road map or imagery to Google" href="https://www.google.com/maps/@41.4658618,-73.239161,11z/data=!10m1!1e1!12b1?source=apiv3&amp;rapsrc=apiv3" style="font-family: Roboto, Arial, sans-serif; font-size: 10px; color: rgb(68, 68, 68); text-decoration: none; position: relative;">Report a map error</a></div></div><div class="gmnoprint gm-bundled-control gm-bundled-control-on-bottom" draggable="false" controlwidth="28" controlheight="55" style="margin: 10px; user-select: none; position: absolute; bottom: 69px; right: 28px;"><div class="gmnoprint" controlwidth="28" controlheight="55" style="position: absolute; left: 0px; top: 0px;"><div draggable="false" style="user-select: none; box-shadow: rgba(0, 0, 0, 0.298039) 0px 1px 4px -1px; border-radius: 2px; cursor: pointer; background-color: rgb(255, 255, 255); width: 28px; height: 55px;"><div title="Zoom in" style="position: relative; width: 28px; height: 27px; left: 0px; top: 0px;"><div style="overflow: hidden; position: absolute; width: 15px; height: 15px; left: 7px; top: 6px;"><img src="./tmapctrl.png" draggable="false" style="position: absolute; left: 0px; top: 0px; user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none; width: 120px; height: 54px;"></div></div><div style="position: relative; overflow: hidden; width: 67%; height: 1px; left: 16%; background-color: rgb(230, 230, 230); top: 0px;"></div><div title="Zoom out" style="position: relative; width: 28px; height: 27px; left: 0px; top: 0px;"><div style="overflow: hidden; position: absolute; width: 15px; height: 15px; left: 7px; top: 6px;"><img src="./tmapctrl.png" draggable="false" style="position: absolute; left: 0px; top: -15px; user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none; width: 120px; height: 54px;"></div></div></div></div><div class="gmnoprint" controlwidth="28" controlheight="0" style="display: none; position: absolute;"><div title="Rotate map 90 degrees" style="width: 28px; height: 28px; overflow: hidden; position: absolute; border-radius: 2px; box-shadow: rgba(0, 0, 0, 0.298039) 0px 1px 4px -1px; cursor: pointer; background-color: rgb(255, 255, 255); display: none;"><img src="./tmapctrl4.png" draggable="false" style="position: absolute; left: -141px; top: 6px; width: 170px; height: 54px; user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div><div class="gm-tilt" style="width: 28px; height: 28px; overflow: hidden; position: absolute; border-radius: 2px; box-shadow: rgba(0, 0, 0, 0.298039) 0px 1px 4px -1px; top: 0px; cursor: pointer; background-color: rgb(255, 255, 255);"><img src="./tmapctrl4.png" draggable="false" style="position: absolute; left: -141px; top: -13px; width: 170px; height: 54px; user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none;"></div></div></div><div class="gmnoprint" style="margin: 10px; z-index: 0; position: absolute; cursor: pointer; left: 0px; top: 0px;"><div class="gm-style-mtc" style="float: left;"><div draggable="false" title="Show street map" style="direction: ltr; overflow: hidden; text-align: center; position: relative; color: rgb(0, 0, 0); font-family: Roboto, Arial, sans-serif; user-select: none; font-size: 11px; background-color: rgb(255, 255, 255); padding: 8px; border-bottom-left-radius: 2px; border-top-left-radius: 2px; -webkit-background-clip: padding-box; background-clip: padding-box; box-shadow: rgba(0, 0, 0, 0.298039) 0px 1px 4px -1px; min-width: 22px; font-weight: 500;">Map</div><div style="background-color: white; z-index: -1; padding: 2px; border-bottom-left-radius: 2px; border-bottom-right-radius: 2px; box-shadow: rgba(0, 0, 0, 0.298039) 0px 1px 4px -1px; position: absolute; left: 0px; top: 31px; text-align: left; display: none;"><div draggable="false" title="Show street map with terrain" style="color: rgb(0, 0, 0); font-family: Roboto, Arial, sans-serif; user-select: none; font-size: 11px; background-color: rgb(255, 255, 255); padding: 6px 8px 6px 6px; direction: ltr; text-align: left; white-space: nowrap;"><span role="checkbox" style="box-sizing: border-box; position: relative; line-height: 0; font-size: 0px; margin: 0px 5px 0px 0px; display: inline-block; background-color: rgb(255, 255, 255); border: 1px solid rgb(198, 198, 198); border-radius: 1px; width: 13px; height: 13px; vertical-align: middle;"><div style="position: absolute; left: 1px; top: -2px; width: 13px; height: 11px; overflow: hidden; display: none;"><img src="./imgs8.png" draggable="false" style="position: absolute; left: -52px; top: -44px; user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none; width: 68px; height: 67px;"></div></span><label style="vertical-align: middle; cursor: pointer;">Terrain</label></div></div></div><div class="gm-style-mtc" style="float: left;"><div draggable="false" title="Show satellite imagery" style="direction: ltr; overflow: hidden; text-align: center; position: relative; color: rgb(86, 86, 86); font-family: Roboto, Arial, sans-serif; user-select: none; font-size: 11px; background-color: rgb(255, 255, 255); padding: 8px; border-bottom-right-radius: 2px; border-top-right-radius: 2px; -webkit-background-clip: padding-box; background-clip: padding-box; box-shadow: rgba(0, 0, 0, 0.298039) 0px 1px 4px -1px; border-left: 0px; min-width: 41px;">Satellite</div><div style="background-color: white; z-index: -1; padding: 2px; border-bottom-left-radius: 2px; border-bottom-right-radius: 2px; box-shadow: rgba(0, 0, 0, 0.298039) 0px 1px 4px -1px; position: absolute; right: 0px; top: 31px; text-align: left; display: none;"><div draggable="false" title="Show imagery with street names" style="color: rgb(0, 0, 0); font-family: Roboto, Arial, sans-serif; user-select: none; font-size: 11px; background-color: rgb(255, 255, 255); padding: 6px 8px 6px 6px; direction: ltr; text-align: left; white-space: nowrap;"><span role="checkbox" style="box-sizing: border-box; position: relative; line-height: 0; font-size: 0px; margin: 0px 5px 0px 0px; display: inline-block; background-color: rgb(255, 255, 255); border: 1px solid rgb(198, 198, 198); border-radius: 1px; width: 13px; height: 13px; vertical-align: middle;"><div style="position: absolute; left: 1px; top: -2px; width: 13px; height: 11px; overflow: hidden;"><img src="./imgs8.png" draggable="false" style="position: absolute; left: -52px; top: -44px; user-select: none; border: 0px; padding: 0px; margin: 0px; max-width: none; width: 68px; height: 67px;"></div></span><label style="vertical-align: middle; cursor: pointer;">Labels</label></div></div></div></div><div draggable="false" class="gm-style-cc" style="position: absolute; user-select: none; height: 14px; line-height: 14px; right: 169px; bottom: 0px;"><div style="opacity: 0.7; width: 100%; height: 100%; position: absolute;"><div style="width: 1px;"></div><div style="background-color: rgb(245, 245, 245); width: auto; height: 100%; margin-left: 1px;"></div></div><div style="position: relative; padding-right: 6px; padding-left: 6px; font-family: Roboto, Arial, sans-serif; font-size: 10px; color: rgb(68, 68, 68); white-space: nowrap; direction: ltr; text-align: right; vertical-align: middle; display: inline-block;"><span>2 km&nbsp;</span><div style="position: relative; display: inline-block; height: 8px; bottom: -1px; width: 35px;"><div style="width: 100%; height: 4px; position: absolute; left: 0px; top: 0px;"></div><div style="width: 4px; height: 8px; left: 0px; top: 0px; background-color: rgb(255, 255, 255);"></div><div style="width: 4px; height: 8px; position: absolute; background-color: rgb(255, 255, 255); left: 0px; bottom: 0px;"></div><div style="position: absolute; background-color: rgb(102, 102, 102); height: 2px; left: 1px; bottom: 1px; right: 1px;"></div><div style="position: absolute; width: 2px; height: 6px; left: 1px; top: 1px; background-color: rgb(102, 102, 102);"></div><div style="width: 2px; height: 6px; position: absolute; background-color: rgb(102, 102, 102); bottom: 1px; right: 1px;"></div></div></div></div></div></div></div>
+<div id="grouplisting" class="span2 groupsection well" style="overflow:auto;"><strong>Groups</strong><br><a href="javascript:groupClicked(0)">Brookfield LifeGroup</a><br><a href="javascript:groupClicked(1)">Danbury Family-Friendly LifeGroup</a><br><a href="javascript:groupClicked(2)">Mens Evening LifeGroup</a><br><a href="javascript:groupClicked(3)">Middlebury LifeGroup </a><br><a href="javascript:groupClicked(4)">Oxford Family-Friendly LifeGroup</a><br><a href="javascript:groupClicked(5)">Seymour Family-Friendly LifeGroup</a><br><a href="javascript:groupClicked(6)">Southbury Family-Friendly LifeGroup</a><br><a href="javascript:groupClicked(7)">Southbury LifeGroup - Wednesdays</a><br><a href="javascript:groupClicked(8)">Womens Evening LifeGroup</a><br><a href="javascript:groupClicked(9)">Womens Morning LifeGroup</a><br><a href="javascript:groupClicked(10)">Woodbury Life Group</a><br><a href="javascript:groupClicked(11)">Young Adult LifeGroup</a><br></div>
+</div>
+<div id="g295030" style="display:none;"><table border="0"><tbody><tr><td><b>Women's Morning LifeGroup</b> &nbsp;  &nbsp; &nbsp; <a class="btn btn-mini" href="Javascript:memberSelectJoinWindow(295030)" title="Register">Register</a> &nbsp; <a class="btn btn-mini" href="https://www.churchteams.com/m/MailGroupLeader.asp?GroupID=295030" target="BLANK" title="Click to email the group Leader">Email</a><span class="MeetingDayPopup g295030"><br><b>Day: </b> Tuesday</span><span class="TimeOfDayPopup g295030"><br><b>Time of Day: </b>Morning</span><span class="DescriptionPopup g295030"><br><b>Description: </b>10:30AM on Tuesdays, Women's LifeGroup</span></td></tr><tr><td><span class="pull-left"><img class="media-object img-rounded" style="height:auto;width:120px;" onclick="pic(this)" src="./13806_295030.jpg"> &nbsp; </span></td></tr></tbody></table></div><div id="g295052" style="display:none;"><table border="0"><tbody><tr><td><b>Men's Evening LifeGroup</b> &nbsp;  &nbsp; &nbsp; <a class="btn btn-mini" href="Javascript:memberSelectJoinWindow(295052)" title="Register">Register</a> &nbsp; <a class="btn btn-mini" href="https://www.churchteams.com/m/MailGroupLeader.asp?GroupID=295052" target="BLANK" title="Click to email the group Leader">Email</a><span class="MeetingDayPopup g295052"><br><b>Day: </b> Tuesday</span><span class="TimeOfDayPopup g295052"><br><b>Time of Day: </b>Evening</span><span class="DescriptionPopup g295052"><br><b>Description: </b>7PM Tuesdays, Men's LifeGroup</span></td></tr><tr><td><span class="pull-left"><img class="media-object img-rounded" style="height:auto;width:120px;" onclick="pic(this)" src="./13806_295052.jpg"> &nbsp; </span></td></tr></tbody></table></div><div id="g295054" style="display:none;"><table border="0"><tbody><tr><td><b>Oxford Family-Friendly LifeGroup</b> &nbsp;  &nbsp; &nbsp; <a class="btn btn-mini" href="Javascript:memberSelectJoinWindow(295054)" title="Register">Register</a> &nbsp; <a class="btn btn-mini" href="https://www.churchteams.com/m/MailGroupLeader.asp?GroupID=295054" target="BLANK" title="Click to email the group Leader">Email</a><span class="MeetingDayPopup g295054"><br><b>Day: </b> Friday</span><span class="TimeOfDayPopup g295054"><br><b>Time of Day: </b>Evening</span><span class="DescriptionPopup g295054"><br><b>Description: </b>7:30 PM on Fridays, Family-Friendly LifeGroup in Oxford</span></td></tr><tr><td><span class="pull-left"><img class="media-object img-rounded" style="height:auto;width:120px;" onclick="pic(this)" src="./13806_295054.jpg"> &nbsp; </span></td></tr></tbody></table></div><div id="g295056" style="display:none;"><table border="0"><tbody><tr><td><b>Seymour Family-Friendly LifeGroup</b> &nbsp;  &nbsp; &nbsp; <a class="btn btn-mini" href="Javascript:memberSelectJoinWindow(295056)" title="Register">Register</a> &nbsp; <a class="btn btn-mini" href="https://www.churchteams.com/m/MailGroupLeader.asp?GroupID=295056" target="BLANK" title="Click to email the group Leader">Email</a><span class="MeetingDayPopup g295056"><br><b>Day: </b> Tuesday</span><span class="TimeOfDayPopup g295056"><br><b>Time of Day: </b>Evening</span><span class="DescriptionPopup g295056"><br><b>Description: </b>7:05PM on Tuesdays, Family Friendly LifeGroup in Seymour</span></td></tr><tr><td><span class="pull-left"><img class="media-object img-rounded" style="height:auto;width:120px;" onclick="pic(this)" src="./13806_295056.jpg"> &nbsp; </span></td></tr></tbody></table></div><div id="g295058" style="display:none;"><table border="0"><tbody><tr><td><b>Southbury Family-Friendly LifeGroup</b> &nbsp;  &nbsp; &nbsp; <a class="btn btn-mini" href="Javascript:memberSelectJoinWindow(295058)" title="Register">Register</a> &nbsp; <a class="btn btn-mini" href="https://www.churchteams.com/m/MailGroupLeader.asp?GroupID=295058" target="BLANK" title="Click to email the group Leader">Email</a><span class="MeetingDayPopup g295058"><br><b>Day: </b> Friday</span><span class="TimeOfDayPopup g295058"><br><b>Time of Day: </b>Evening</span><span class="DescriptionPopup g295058"><br><b>Description: </b>7PM on Fridays, Family Friendly LifeGroup in Southbury</span></td></tr><tr><td><span class="pull-left"><img class="media-object img-rounded" style="height:auto;width:120px;" onclick="pic(this)" src="./13806_295058.jpg"> &nbsp; </span></td></tr></tbody></table></div><div id="g295059" style="display:none;"><table border="0"><tbody><tr><td><b>Middlebury LifeGroup </b> &nbsp;  &nbsp; &nbsp; <a class="btn btn-mini" href="Javascript:memberSelectJoinWindow(295059)" title="Register">Register</a> &nbsp; <a class="btn btn-mini" href="https://www.churchteams.com/m/MailGroupLeader.asp?GroupID=295059" target="BLANK" title="Click to email the group Leader">Email</a><span class="MeetingDayPopup g295059"><br><b>Day: </b> Friday</span><span class="TimeOfDayPopup g295059"><br><b>Time of Day: </b>Evening</span><span class="DescriptionPopup g295059"><br><b>Description: </b>7PM on Fridays, LifeGroup in Middlebury</span></td></tr><tr><td><span class="pull-left"><img class="media-object img-rounded" style="height:auto;width:120px;" onclick="pic(this)" src="./13806_295059.jpg"> &nbsp; </span></td></tr></tbody></table></div><div id="g295060" style="display:none;"><table border="0"><tbody><tr><td><b>Southbury LifeGroup - Wednesdays</b> &nbsp;  &nbsp; &nbsp; <a class="btn btn-mini" href="Javascript:memberSelectJoinWindow(295060)" title="Register">Register</a> &nbsp; <a class="btn btn-mini" href="https://www.churchteams.com/m/MailGroupLeader.asp?GroupID=295060" target="BLANK" title="Click to email the group Leader">Email</a><span class="MeetingDayPopup g295060"><br><b>Day: </b> Wednesday</span><span class="TimeOfDayPopup g295060"><br><b>Time of Day: </b>Evening</span><span class="DescriptionPopup g295060"><br><b>Description: </b>7PM LifeGroup in Heritage Village</span></td></tr><tr><td><span class="pull-left"><img class="media-object img-rounded" style="height:auto;width:120px;" onclick="pic(this)" src="./13806_295060.jpg"> &nbsp; </span></td></tr></tbody></table></div><div id="g295064" style="display:none;"><table border="0"><tbody><tr><td><b>Young Adult LifeGroup</b> &nbsp;  &nbsp; &nbsp; <a class="btn btn-mini" href="Javascript:memberSelectJoinWindow(295064)" title="Register">Register</a> &nbsp; <a class="btn btn-mini" href="https://www.churchteams.com/m/MailGroupLeader.asp?GroupID=295064" target="BLANK" title="Click to email the group Leader">Email</a><span class="MeetingDayPopup g295064"><br><b>Day: </b> Sunday</span><span class="TimeOfDayPopup g295064"><br><b>Time of Day: </b>Evening</span><span class="DescriptionPopup g295064"><br><b>Description: </b>7PM on Sundays, Young Adults LifeGroup</span></td></tr><tr><td><span class="pull-left"><img class="media-object img-rounded" style="height:auto;width:120px;" onclick="pic(this)" src="./13806_295064.jpg"> &nbsp; </span></td></tr></tbody></table></div><div id="g295071" style="display:none;"><table border="0"><tbody><tr><td><b>Women's Evening LifeGroup</b> &nbsp;  &nbsp; &nbsp; <a class="btn btn-mini" href="Javascript:memberSelectJoinWindow(295071)" title="Register">Register</a> &nbsp; <a class="btn btn-mini" href="https://www.churchteams.com/m/MailGroupLeader.asp?GroupID=295071" target="BLANK" title="Click to email the group Leader">Email</a><span class="MeetingDayPopup g295071"><br><b>Day: </b> Tuesday</span><span class="TimeOfDayPopup g295071"><br><b>Time of Day: </b>Evening</span><span class="DescriptionPopup g295071"><br><b>Description: </b>7PM on Tuesdays, Women's LifeGroup</span></td></tr><tr><td><span class="pull-left"><img class="media-object img-rounded" style="height:auto;width:120px;" onclick="pic(this)" src="./13806_295071.jpg"> &nbsp; </span></td></tr></tbody></table></div><div id="g297047" style="display:none;"><table border="0"><tbody><tr><td><b>Brookfield LifeGroup</b> &nbsp;  &nbsp; &nbsp; <a class="btn btn-mini" href="Javascript:memberSelectJoinWindow(297047)" title="Register">Register</a> &nbsp; <a class="btn btn-mini" href="https://www.churchteams.com/m/MailGroupLeader.asp?GroupID=297047" target="BLANK" title="Click to email the group Leader">Email</a><span class="MeetingDayPopup g297047"><br><b>Day: </b> Friday</span><span class="TimeOfDayPopup g297047"><br><b>Time of Day: </b>Evening</span><span class="DescriptionPopup g297047"><br><b>Description: </b>7:30 PM on Fridays, LifeGroup meeting in Brookfield</span></td></tr><tr><td><span class="pull-left"><img class="media-object img-rounded" style="height:auto;width:120px;" onclick="pic(this)" src="./13806_297047.jpg"> &nbsp; </span></td></tr></tbody></table></div><div id="g297075" style="display:none;"><table border="0"><tbody><tr><td><b>Woodbury Life Group</b> &nbsp;  &nbsp; &nbsp; <a class="btn btn-mini" href="Javascript:memberSelectJoinWindow(297075)" title="Register">Register</a> &nbsp; <a class="btn btn-mini" href="https://www.churchteams.com/m/MailGroupLeader.asp?GroupID=297075" target="BLANK" title="Click to email the group Leader">Email</a><span class="MeetingDayPopup g297075"><br><b>Day: </b> Friday</span><span class="TimeOfDayPopup g297075"><br><b>Time of Day: </b>Evening</span><span class="DescriptionPopup g297075"><br><b>Description: </b>7PM on Fridays, LifeGroup meeting in Woodbury</span></td></tr><tr><td><span class="pull-left"><img class="media-object img-rounded" style="height:auto;width:120px;" onclick="pic(this)" src="./13806_297075.jpg"> &nbsp; </span></td></tr></tbody></table></div><div id="g300458" style="display:none;"><table border="0"><tbody><tr><td><b>Danbury Family-Friendly LifeGroup</b> &nbsp;  &nbsp; &nbsp; <a class="btn btn-mini" href="Javascript:memberSelectJoinWindow(300458)" title="Register">Register</a> &nbsp; <a class="btn btn-mini" href="https://www.churchteams.com/m/MailGroupLeader.asp?GroupID=300458" target="BLANK" title="Click to email the group Leader">Email</a><span class="MeetingDayPopup g300458"><br><b>Day: </b> Friday</span><span class="TimeOfDayPopup g300458"><br><b>Time of Day: </b>Evening</span><span class="DescriptionPopup g300458"><br><b>Description: </b>7PM, Fridays, Family-Friendly LifeGroup</span></td></tr><tr><td><span class="pull-left"><img class="media-object img-rounded" style="height:auto;width:120px;" onclick="pic(this)" src="./13806_300458.jpg"> &nbsp; </span></td></tr></tbody></table></div>
+
+</div>
+
+
+</body></html>

@@ -1,0 +1,22 @@
+body {
+color: black;
+background-color: white;
+}
+
+/* Group separator line */
+li.media {
+border-bottom:3px solid #D8DFEA;
+padding-right: 10px;
+}
+
+/* Group Attributes (i.e. Meeting Day, Study topic etc) */
+span.av { font-weight: normal; }
+/* Group Attribute labels */
+span.al { font-weight: bold; }
+/* Group Description font */
+span.gd { font-size:small;}
+
+
+
+
+
