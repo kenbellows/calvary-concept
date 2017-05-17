@@ -1,2 +1,2 @@
 # calvary-concept
-Redesign concept for calvarysouthbury.com
+Redesign concept for http://calvarysouthbury.com
